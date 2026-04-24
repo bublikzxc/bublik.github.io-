@@ -1391,7 +1391,7 @@ function playShameSound() {
     showConfirmModal(type, amount, () => {
       applyWaste(type, amount);
       const input = document.getElementById(type === 'unexpected' ? 'unexpected' : 'wants');
-      input.value = '0';
+      input.value = '';
     });
     return true;
   }
@@ -1421,7 +1421,7 @@ function playShameSound() {
       msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#4ecdc4; color:#000; padding:10px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000;';
       document.body.appendChild(msg);
       setTimeout(() => msg.remove(), 3000);
-      input.value = '0';
+      input.value = '';
       renderCredits();
       renderHistory();
       updateChart();
@@ -1444,7 +1444,7 @@ function playShameSound() {
       msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#4ecdc4; color:#000; padding:10px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000;';
       document.body.appendChild(msg);
       setTimeout(() => msg.remove(), 3000);
-      input.value = '0';
+      input.value = '';
       renderCredits();
       renderHistory();
       updateChart();
