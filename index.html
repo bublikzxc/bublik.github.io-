@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КРЕДИТНЫЙ ТРЕКЕР - СЧЁТЧИК СТЫДА СО ЗВУКОМ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ffb347 50%, #ff6b6b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: slideIn 0.4s ease-out;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      font-family: 'Courier New', 'Fira Code', monospace;
+      padding: 1.5rem;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    @keyframes slideBg {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+
+    @keyframes expandToFull {
+      0% {
+        width: 100%;
+        height: 80px;
+        font-size: 1rem;
+        opacity: 1;
+      }
+      30% {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        border-radius: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        opacity: 1;
+      }
+      100% {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        border-radius: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        opacity: 1;
+      }
+    }
+
+    @keyframes collapseShame {
+      0% {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        border-radius: 0;
+        margin: 0;
+        opacity: 1;
+      }
+      70% {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        opacity: 1;
+      }
+      100% {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-radius: 16px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes slapText {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); text-shadow: 0 0 20px #ff0000; }
+    }
+
+    .shame-counter {
+      background: #2a1a1a;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid #ff6b6b;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shame-counter.slapping {
+      animation: expandToFull 0.5s ease-out forwards;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #2a0a0a 0%, #1a0000 100%);
+    }
+
+    .shame-counter.collapsing {
+      animation: collapseShame 0.6s ease-in-out forwards;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #2a0a0a 0%, #1a0000 100%);
+    }
+
+    .close-slap {
+      display: none;
+    }
+
+    .shame-counter h3 {
+      color: #ff6b6b;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .shame-progress {
+      background: #3a2a2a;
+      height: 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+
+    .shame-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b6b, #ffcc33, #ff6b6b);
+      background-size: 200% 100%;
+      animation: slideBg 3s ease infinite;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: #000;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .shame-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .input-panel {
+      background: #1f1f25;
+      padding: 1.2rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      animation: fadeIn 0.5s ease-out 0.1s both;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .input-group label {
+      font-size: 0.7rem;
+      color: #ffb347;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .input-group input {
+      background: #2a2a30;
+      border: 1px solid #4a4a55;
+      color: #ff6b6b;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .waste-panel {
+      background: #1f1f25;
+      padding: 1.2rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      border: 1px solid #ff6b6b;
+    }
+
+    .waste-group {
+      background: #2a2a2f;
+      padding: 1rem;
+      border-radius: 12px;
+    }
+
+    .waste-group h3 {
+      color: #ff6b6b;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .waste-group input {
+      width: 100%;
+      background: #1a1a1f;
+      border: 1px solid #ff6b6b;
+      color: #ffb347;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .waste-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .waste-buttons button {
+      padding: 5px 12px;
+      font-size: 0.7rem;
+    }
+
+    button {
+      background: #ff6b6b;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      color: #0a0a0a;
+      font-weight: bold;
+      font-family: monospace;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #ff5252;
+      transform: scale(0.97);
+      animation: pulse 0.3s ease;
+    }
+
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .confirm-content {
+      background: linear-gradient(135deg, #2a1a1a 0%, #1a0a0a 100%);
+      margin: 15% auto;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      border: 2px solid #ff6b6b;
+      box-shadow: 0 0 50px rgba(255, 50, 50, 0.5);
+      animation: shake 0.5s ease;
+    }
+
+    .confirm-content h2 {
+      color: #ff6b6b;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .confirm-content p {
+      margin: 1rem 0;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .credit-block {
+      background: #1a1a1f;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      border-left: 3px solid #ff6b6b;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .credit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 0.8rem;
+    }
+
+    .credit-title {
+      color: #ffb347;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .recommend-box {
+      background: #2a2a3a;
+      padding: 0.6rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      border-left: 3px solid #4ecdc4;
+      font-size: 0.85rem;
+      color: #4ecdc4;
+    }
+
+    .recommend-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #9bff9b;
+    }
+
+    .progress-recommend {
+      background: #1a1a2a;
+      padding: 0.5rem;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      border-left: 3px solid #ffb347;
+    }
+
+    .progress-bar-bg {
+      background: #2a2a30;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.3rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ecdc4, #9bff9b);
+      transition: width 0.5s ease;
+      border-radius: 10px;
+    }
+
+    .credit-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .stat-item {
+      background: #25252c;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: #aaa;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ff6b6b;
+    }
+
+    .min-payment-edit {
+      background: #2a2a1a;
+      padding: 0.6rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      border-left: 3px solid #ffb347;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .min-payment-edit input {
+      background: #2a2a30;
+      border: 1px solid #4a4a55;
+      color: #9bff9b;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      width: 130px;
+      transition: all 0.3s ease;
+    }
+
+    .min-payment-edit input:focus {
+      outline: none;
+      border-color: #4ecdc4;
+      box-shadow: 0 0 8px rgba(78, 205, 196, 0.3);
+      transform: scale(1.02);
+    }
+
+    .payment-input {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .payment-input input {
+      background: #2a2a30;
+      border: 1px solid #4a4a55;
+      color: #9bff9b;
+      padding: 6px 10px;
+      border-radius: 6px;
+      width: 150px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #1f1f25 0%, #15151a 100%);
+      margin: 10% auto;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #ff6b6b;
+    }
+
+    .modal-content h2 {
+      color: #ff6b6b;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content input {
+      width: 100%;
+      background: #2a2a30;
+      border: 1px solid #4a4a55;
+      color: #ff6b6b;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .chart-container {
+      background: #1f1f25;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .progress-ring {
+      position: relative;
+      width: 150px;
+      height: 150px;
+    }
+
+    .progress-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+      fill: none;
+      stroke: #2a2a30;
+      stroke-width: 8;
+    }
+
+    .progress-ring-circle-progress {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .progress-percent {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .chart-stats {
+      flex: 1;
+    }
+
+    .chart-stats div {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: #2a2a30;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      display: block;
+    }
+
+    th {
+      background: #1f1f25;
+      color: #ffb347;
+      padding: 10px 6px;
+      border-bottom: 2px solid #ff6b6b;
+    }
+
+    td {
+      background: #25252c;
+      padding: 8px 6px;
+      border-bottom: 1px solid #3a3a44;
+    }
+
+    .positive {
+      color: #9bff9b;
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      background: #1a1a1f;
+      padding: 1rem;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .history-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+     <h1><span style="color: #ffffff; text-shadow: none;">☠️</span> <span style="background: linear-gradient(135deg, #ff6b6b 0%, #ffb347 50%, #ff6b6b 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">РАСПИЗДЯЧЬ КРЕДИТЫ - ЕБАНАТ</span> <span style="color: #ffffff; text-shadow: none;">☠️</span></h1>
+  
+  <div class="shame-counter" id="shameCounter">
+    <h3>😤 СЧЁТЧИК ПРОЁБАННЫХ НА ХУЙНЮ ДЕНЕГ</h3>
+    <div class="shame-progress">
+      <div class="shame-fill" id="shameFill" style="width: 0%;">0 ₽</div>
+    </div>
+    <div class="shame-stats">
+      <span>💀 ВСЕГО ПРОЕБАНО: <span id="totalWasted">0</span> ₽</span>
+      <span>📉 НА ЭТИ ДЕНЬГИ МОЖНО БЫЛО ПОГАСИТЬ <span id="couldPayPercent">0</span>% ДОЛГОВ</span>
+    </div>
+    <button class="close-slap" id="closeSlapBtn" style="display: none;">😤 Я ПОНЯЛ ЧТО Я ХУЕСОС КОТОРЫЙ ТРАТИТ ПРОСТО ТАК ДЕНЬГИ 😤</button>
+    <div style="display: flex; gap: 0.5rem; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+      <input type="number" id="redeemAmount" placeholder="Сколько отбить?" value="0" step="1000" style="background: #2a2a30; border: 1px solid #4a4a55; color: #9bff9b; padding: 8px 12px; border-radius: 8px; font-family: monospace; width: 180px;">
+      <button id="redeemShameBtn" style="display: none; background: #4ecdc4;">💪 ОТБИТЬ (ЗАКИНУТЬ НА КРЕДИТ) 💪</button>
+    </div>
+  </div>
+
+  <div class="input-panel">
+    <div class="input-group">
+      <label>💰 ЗАРПЛАТА (₽)</label>
+      <input type="number" id="salary" value="50000" step="1000">
+    </div>
+    <div class="input-group">
+      <label>🏠 АРЕНДА (₽)</label>
+      <input type="number" id="rent" value="6500" step="500">
+    </div>
+    <div class="input-group">
+      <label>🍔 ЖРАТВА (₽)</label>
+      <input type="number" id="living" value="10000" step="1000">
+    </div>
+  </div>
+
+  <div class="waste-panel">
+    <div class="waste-group">
+      <h3>⚠️ НЕПРЕДВИДЕННЫЕ РАСХОДЫ</h3>
+      <input type="number" id="unexpected" placeholder="Сумма" value="0" step="500">
+      <div class="waste-buttons">
+        <button id="applyUnexpectedBtn" style="background:#ff6b6b;">💸 ПОТРАТИТЬ</button>
+        <button id="suggestToCreditUnexpected" style="background:#4ecdc4;">💡 ОТПРАВИТЬ НА КРЕДИТ</button>
+      </div>
+      <div class="shame-message" style="display:none; background:#2a1a1a; padding:0.5rem; border-radius:8px; font-size:0.7rem; color:#ff8888; margin-top:0.5rem; border-left:3px solid #ff6b6b;" id="unexpectedShame"></div>
+    </div>
+    <div class="waste-group">
+      <h3>😈 МОИ "ХОЧУ"</h3>
+      <input type="number" id="wants" placeholder="Сумма" value="0" step="500">
+      <div class="waste-buttons">
+        <button id="applyWantsBtn" style="background:#ff6b6b;">💸 ПОТРАТИТЬ</button>
+        <button id="suggestToCreditWants" style="background:#4ecdc4;">💡 ОТПРАВИТЬ НА КРЕДИТ</button>
+      </div>
+      <div class="shame-message" style="display:none; background:#2a1a1a; padding:0.5rem; border-radius:8px; font-size:0.7rem; color:#ff8888; margin-top:0.5rem; border-left:3px solid #ff6b6b;" id="wantsShame"></div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="progress-ring">
+      <svg width="150" height="150">
+        <circle class="progress-ring-circle" cx="75" cy="75" r="65"></circle>
+        <circle class="progress-ring-circle-progress" cx="75" cy="75" r="65" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+      </svg>
+      <div class="progress-text">
+        <div class="progress-percent" id="progressPercent">0%</div>
+        <div style="font-size:0.7rem;">ВЫПЛАТЫ</div>
+      </div>
+    </div>
+    <div class="chart-stats" id="chartStats"></div>
+  </div>
+
+  <div style="margin-bottom: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
+    <button id="addCreditBtn">➕ ДОБАВИТЬ КРЕДИТ</button>
+    <button id="resetPaymentsBtn" style="background:#6b2a2a;">🔄 СБРОСИТЬ ВСЕ ЗАКИДОНЫ</button>
+    <button id="resetMonthlyBtn" style="background:#ffb347;">🔄 СБРОСИТЬ МЕСЯЧНЫЙ ПРОГРЕСС</button>
+    <button id="resetShameBtn" style="background:#6b2a2a;">😤 СБРОСИТЬ СЧЁТЧИК СТЫДА</button>
+  </div>
+
+  <div id="creditsContainer"></div>
+
+  <div style="margin-top: 1.5rem;">
+    <h3 style="color:#ffb347;">📋 ИСТОРИЯ ЗАКИДОНОВ</h3>
+    <div class="history-table-container" id="historyContainer"></div>
+  </div>
+
+  <div class="footer" id="footerMsg">
+    ⚡ КАЖДАЯ ТРАТА НА ХУЙНЮ УВЕЛИЧИВАЕТ СЧЁТЧИК СТЫДА И ВОСПРОИЗВОДИТ УНИЗИТЕЛЬНЫЙ ЗВУК
+  </div>
+</div>
+
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-content">
+    <h2>🤬 ТЫ ЧЁ, ЕБАНАТ?</h2>
+    <p id="confirmMessage"></p>
+    <div id="confirmScale" style="margin: 1rem 0; display: none;">
+      <div style="background: #3a2a2a; height: 20px; border-radius: 10px; overflow: hidden;">
+        <div id="confirmScaleFill" style="height: 100%; width: 0%; background: #ff6b6b; transition: width 0.3s ease;"></div>
+      </div>
+      <p style="font-size: 0.7rem; margin-top: 0.3rem;" id="confirmScaleText"></p>
+    </div>
+    <div class="confirm-buttons">
+      <button id="confirmYes" style="background:#ff6b6b;">😤 ДА, Я ДЕБИЛ</button>
+      <button id="confirmNo" style="background:#4ecdc4;">❌ НЕТ, ОДУМАЛСЯ</button>
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h2>✏️ РЕДАКТИРОВАТЬ КРЕДИТ</h2>
+    <label>НАЗВАНИЕ:</label>
+    <input type="text" id="editCreditName">
+    <label>СУММА ДОЛГА (₽):</label>
+    <input type="number" id="editCreditAmount">
+    <div class="modal-buttons">
+      <button id="saveEditBtn" style="background:#4ecdc4;">💾 СОХРАНИТЬ</button>
+      <button id="cancelEditBtn" style="background:#6b2a2a;">❌ ОТМЕНА</button>
+    </div>
+  </div>
+</div>
+
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <h2>➕ ДОБАВИТЬ НОВЫЙ КРЕДИТ</h2>
+    <label>НАЗВАНИЕ:</label>
+    <input type="text" id="addCreditName" placeholder="Например: Кредит в Тинькофф">
+    <label>СУММА ДОЛГА (₽):</label>
+    <input type="number" id="addCreditAmount" placeholder="10000">
+    <label>МИНИМАЛЬНЫЙ ПЛАТЁЖ (₽):</label>
+    <input type="number" id="addMinPayment" placeholder="500">
+    <div class="modal-buttons">
+      <button id="saveAddBtn" style="background:#4ecdc4;">➕ ДОБАВИТЬ</button>
+      <button id="cancelAddBtn" style="background:#6b2a2a;">❌ ОТМЕНА</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let credits = [
+    { id: 0, name: "Кредит 1", initialAmount: 29000, remaining: 29000, minPayment: 1450, paidHistory: [], monthlyPaid: 0 },
+    { id: 1, name: "Кредит 2", initialAmount: 33000, remaining: 33000, minPayment: 1650, paidHistory: [], monthlyPaid: 0 },
+    { id: 2, name: "Кредит 3", initialAmount: 79000, remaining: 79000, minPayment: 3950, paidHistory: [], monthlyPaid: 0 }
+  ];
+  let nextId = 3;
+  let currentEditId = null;
+  
+  let totalWastedMoney = 0;
+  let pendingWaste = { type: null, amount: 0, callback: null };
+  let slapDone = false;
+
+  // ===== ЗВУК ДЛЯ ШКАЛЫ СТЫДА =====
+let audioContextInit = false;
+let shameSounds = [];
+let soundIndex = 0;
+
+function initAudio() {
+  if (!audioContextInit) {
+    shameSounds = [
+      new Audio('shame1.mp3'),
+      new Audio('shame2.mp3'),
+      new Audio('shame3.mp3')
+    ];
+    shameSounds.forEach(sound => {
+      sound.preload = 'auto';
+    });
+    audioContextInit = true;
+  }
+}
+
+function playShameSound() {
+  try {
+    initAudio();
+    if (shameSounds.length > 0) {
+      // Берём текущий звук по очереди
+      const currentSound = shameSounds[soundIndex];
+      currentSound.currentTime = 0;
+      currentSound.play().catch(e => console.log('Звук не воспроизвёлся, ебанат:', e));
+      
+      // Переключаем индекс на следующий звук (0,1,2,0,1,2...)
+      soundIndex = (soundIndex + 1) % shameSounds.length;
+    }
+  } catch(e) {
+    console.log('Звук нахуй не работает', e);
+  }
+}
+// ===== КОНЕЦ БЛОКА СО ЗВУКОМ =====
+
+  function loadWastedFromLocal() {
+    const saved = localStorage.getItem('totalWastedMoney');
+    if (saved && !isNaN(parseFloat(saved))) {
+      totalWastedMoney = parseFloat(saved);
+    }
+  }
+
+  function saveWastedToLocal() {
+    localStorage.setItem('totalWastedMoney', totalWastedMoney);
+  }
+
+  function updateShameCounter() {
+    const totalRemaining = credits.reduce((sum, c) => sum + c.remaining, 0);
+    const totalInitial = credits.reduce((sum, c) => sum + c.initialAmount, 0);
+    const totalPaid = totalInitial - totalRemaining;
+    const couldPayPercent = totalRemaining > 0 ? (totalWastedMoney / totalRemaining * 100).toFixed(1) : 0;
+    
+    document.getElementById('totalWasted').textContent = totalWastedMoney.toLocaleString();
+    document.getElementById('couldPayPercent').textContent = couldPayPercent;
+    
+    const maxShame = totalRemaining > 0 ? totalRemaining * 2 : 100000;
+    let shamePercent = Math.min(100, (totalWastedMoney / maxShame * 100));
+    if (totalRemaining === 0 && totalWastedMoney > 0) shamePercent = 100;
+    
+    const shameFill = document.getElementById('shameFill');
+    shameFill.style.width = `${shamePercent}%`;
+    shameFill.innerHTML = `${totalWastedMoney.toLocaleString()} ₽`;
+    
+    const redeemBtn = document.getElementById('redeemShameBtn');
+    const redeemInput = document.getElementById('redeemAmount');
+    if (redeemBtn && redeemInput) {
+      if (totalWastedMoney > 0) {
+        redeemBtn.style.display = 'block';
+        redeemInput.style.display = 'block';
+        redeemInput.placeholder = `Макс: ${totalWastedMoney.toLocaleString()} ₽`;
+        redeemInput.max = totalWastedMoney;
+      } else {
+        redeemBtn.style.display = 'none';
+        redeemInput.style.display = 'none';
+      }
+    }
+  }
+
+  function addWastedMoney(amount, type) {
+    totalWastedMoney += amount;
+    saveWastedToLocal();
+    updateShameCounter();
+    
+    // Ебануть звук при КАЖДОМ проёбе
+    if (amount > 0) {
+      playShameSound();
+    }
+  }
+
+  function getRandomShameMessage(amount, totalDebt, percentOfDebt) {
+    const messages = [
+      `ТЫ РЕАЛЬНО ХОЧЕШЬ ПРОЕБАТЬ ${amount.toLocaleString()} ₽ НА ХУЙНЮ? У ТЕБЯ ${totalDebt.toLocaleString()} ₽ ДОЛГОВ, ДЕБИЛ!`,
+      `${amount.toLocaleString()} ₽ - ЭТО ${percentOfDebt}% ОТ ТВОИХ ДОЛГОВ! ТЫ В СВОЁМ УМЕ?`,
+      `ЕБАНАТ, ЭТИ ДЕНЬГИ МОГЛИ БЫ ЗАКРЫТЬ ЧАСТЬ КРЕДИТА! ОДУМАЙСЯ, ПОКА НЕ ПОЗДНО!`,
+      `${amount.toLocaleString()} ₽ ПРОЕБАТЬ? ТЫ ЧЁ, БОГАТЫЙ? А КРЕДИТЫ КТО ПЛАТИТЬ БУДЕТ?`,
+      `ПОДУМАЙ ХОРОШО! ЕСЛИ ЗАКИНЕШЬ ЭТИ ${amount.toLocaleString()} ₽ НА КРЕДИТ, СМОЖЕШЬ ЗАКРЫТЬ ЕГО НА ${percentOfDebt}% БЫСТРЕЕ!`
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+
+  function showConfirmModal(type, amount, callback) {
+    const totalDebt = credits.reduce((sum, c) => sum + c.remaining, 0);
+    const percentOfDebt = totalDebt > 0 ? (amount / totalDebt * 100).toFixed(1) : 0;
+    const message = getRandomShameMessage(amount, totalDebt, percentOfDebt);
+    
+    document.getElementById('confirmMessage').innerHTML = `${message}<br><br><strong style="font-size:1.2rem;">${amount.toLocaleString()} ₽</strong>`;
+    
+    const scaleDiv = document.getElementById('confirmScale');
+    const scaleFill = document.getElementById('confirmScaleFill');
+    const scaleText = document.getElementById('confirmScaleText');
+    
+    if (totalDebt > 0) {
+      const percentCouldPay = (amount / totalDebt * 100).toFixed(1);
+      scaleDiv.style.display = 'block';
+      scaleFill.style.width = `${Math.min(100, percentCouldPay)}%`;
+      scaleText.innerHTML = `📉 ЭТИМИ ДЕНЬГАМИ МОЖНО ПОГАСИТЬ ${percentCouldPay}% ВСЕХ ДОЛГОВ!`;
+    } else {
+      scaleDiv.style.display = 'none';
+    }
+    
+    pendingWaste = { type, amount, callback };
+    document.getElementById('confirmModal').style.display = 'block';
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+    pendingWaste = { type: null, amount: 0, callback: null };
+  }
+
+  function applyWaste(type, amount) {
+    addWastedMoney(amount, type);
+    const shameDiv = document.getElementById(type === 'unexpected' ? 'unexpectedShame' : 'wantsShame');
+    shameDiv.textContent = `😭 ПРОЕБАЛ ${amount.toLocaleString()} ₽! СЧЁТЧИК СТЫДА УВЕЛИЧЕН!`;
+    shameDiv.style.display = 'block';
+    setTimeout(() => { shameDiv.style.display = 'none'; }, 3000);
+    
+    const footer = document.getElementById('footerMsg');
+    footer.innerHTML = `😤 ТЫ ПРОЕБАЛ ${amount.toLocaleString()} ₽! СЧЁТЧИК СТЫДА УВЕЛИЧЕН!`;
+    footer.style.background = '#2a1a1a';
+    setTimeout(() => {
+      footer.innerHTML = '⚡ КАЖДАЯ ТРАТА НА ХУЙНЮ УВЕЛИЧИВАЕТ СЧЁТЧИК СТЫДА';
+      footer.style.background = '#1a1a1f';
+    }, 4000);
+  }
+
+  function redeemWastedMoney() {
+    const redeemAmountInput = document.getElementById('redeemAmount');
+    let amountToRedeem = parseFloat(redeemAmountInput.value);
+    
+    if (isNaN(amountToRedeem) || amountToRedeem <= 0) {
+      alert('Введи сумму которую хочешь отбить, ебанат!');
+      return false;
+    }
+    
+    if (amountToRedeem > totalWastedMoney) {
+      alert(`Ты хочешь отбить ${amountToRedeem.toLocaleString()} ₽, но у тебя проебано только ${totalWastedMoney.toLocaleString()} ₽! Так не пойдёт, жулик!`);
+      return false;
+    }
+    
+    const totalDebt = credits.reduce((sum, c) => sum + c.remaining, 0);
+    if (totalDebt === 0) {
+      alert('У тебя нет кредитов, некуда закидывать!');
+      return false;
+    }
+    
+    if (!confirm(`Ты реально хочешь отбить ${amountToRedeem.toLocaleString()} ₽ и закинуть их на самый мелкий кредит? Это правильный путь, хуесос! Останется проебано ${(totalWastedMoney - amountToRedeem).toLocaleString()} ₽`)) {
+      return false;
+    }
+    
+    if (addToSmallestCredit(amountToRedeem)) {
+      const msg = document.createElement('div');
+      msg.textContent = `💪 МОЛОДЕЦ! ТЫ ОТБИЛ ${amountToRedeem.toLocaleString()} ₽ И ЗАКИНУЛ ИХ НА КРЕДИТ! ОСТАЛОСЬ ПРОЕБАНО: ${(totalWastedMoney - amountToRedeem).toLocaleString()} ₽`;
+      msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#9bff9b; color:#000; padding:15px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000; font-weight:bold;';
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 5000);
+      
+      totalWastedMoney -= amountToRedeem;
+      saveWastedToLocal();
+      updateShameCounter();
+      
+      renderCredits();
+      renderHistory();
+      updateChart();
+      saveToLocal();
+      
+      redeemAmountInput.value = '0';
+      
+      if (totalWastedMoney === 0) {
+        document.getElementById('redeemShameBtn').style.display = 'none';
+        const counter = document.getElementById('shameCounter');
+        if (counter.classList.contains('slapping')) {
+          closeSlap();
+        }
+      }
+    } else {
+      alert('Чё-то пошло не так, хуй знает...');
+    }
+    return true;
+  }
+
+  function slapUserInFace() {
+    if (slapDone) return;
+    
+    if (totalWastedMoney === 0) {
+      slapDone = true;
+      return;
+    }
+    
+    const counter = document.getElementById('shameCounter');
+    const closeBtn = document.getElementById('closeSlapBtn');
+    
+    counter.classList.add('slapping');
+    closeBtn.style.display = 'block';
+    closeBtn.style.cursor = 'pointer';
+    
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSlap() {
+    const counter = document.getElementById('shameCounter');
+    const closeBtn = document.getElementById('closeSlapBtn');
+    
+    counter.classList.remove('slapping');
+    counter.classList.add('collapsing');
+    
+    closeBtn.style.display = 'none';
+    document.body.style.overflow = '';
+    
+    setTimeout(() => {
+      counter.classList.remove('collapsing');
+    }, 700);
+  }
+
+  function getColorByPercent(percent) {
+    if (percent < 50) return { stroke: '#ff3333', text: '#ff6666' };
+    if (percent < 80) return { stroke: '#ffcc33', text: '#ffcc33' };
+    return { stroke: '#33ff55', text: '#33ff55' };
+  }
+
+  function saveToLocal() {
+    localStorage.setItem('creditTrackerShamerPro', JSON.stringify({ credits, nextId, slapDone, totalWastedMoney }));
+  }
+
+  function loadFromLocal() {
+    const data = localStorage.getItem('creditTrackerShamerPro');
+    if (data) {
+      try {
+        const parsed = JSON.parse(data);
+        credits = parsed.credits;
+        nextId = parsed.nextId;
+        if (parsed.slapDone !== undefined) slapDone = parsed.slapDone;
+        if (parsed.totalWastedMoney !== undefined) totalWastedMoney = parsed.totalWastedMoney;
+      } catch(e) {}
+    }
+  }
+
+  function getMonthlyFreeMoney() {
+    const salary = parseFloat(document.getElementById('salary').value) || 0;
+    const rent = parseFloat(document.getElementById('rent').value) || 0;
+    const living = parseFloat(document.getElementById('living').value) || 0;
+    return Math.max(0, salary - rent - living);
+  }
+
+  function calculateRecommendations() {
+    const freeMoney = getMonthlyFreeMoney();
+    const activeCredits = credits.filter(c => c.remaining > 0);
+    let recommendations = {};
+    
+    if (activeCredits.length === 0 || freeMoney <= 0) {
+      credits.forEach(c => recommendations[c.id] = 0);
+      return recommendations;
+    }
+    
+    let remainingMoney = freeMoney;
+    for (let c of activeCredits) {
+      const needed = Math.min(c.remaining, c.minPayment);
+      recommendations[c.id] = needed;
+      remainingMoney -= needed;
+    }
+    
+    if (remainingMoney > 0) {
+      let smallest = activeCredits.reduce((a, b) => a.remaining < b.remaining ? a : b);
+      const maxToSmallest = Math.min(smallest.remaining - recommendations[smallest.id], remainingMoney);
+      recommendations[smallest.id] += maxToSmallest;
+    }
+    
+    return recommendations;
+  }
+
+  function updateChart() {
+    const totalInitial = credits.reduce((sum, c) => sum + c.initialAmount, 0);
+    const totalRemaining = credits.reduce((sum, c) => sum + c.remaining, 0);
+    const totalPaid = totalInitial - totalRemaining;
+    const percent = totalInitial > 0 ? (totalPaid / totalInitial * 100).toFixed(1) : 100;
+    
+    const radius = 65;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percent / 100) * circumference;
+    
+    const progressCircle = document.querySelector('.progress-ring-circle-progress');
+    const colors = getColorByPercent(parseFloat(percent));
+    
+    if (progressCircle) {
+      progressCircle.style.stroke = colors.stroke;
+      progressCircle.style.strokeDasharray = `${circumference}`;
+      progressCircle.style.strokeDashoffset = offset;
+    }
+    
+    const percentElement = document.getElementById('progressPercent');
+    percentElement.style.color = colors.text;
+    percentElement.textContent = `${percent}%`;
+    
+    const freeMoney = getMonthlyFreeMoney();
+    const totalMinPayments = credits.reduce((sum, c) => sum + c.minPayment, 0);
+    const monthsEstimate = totalRemaining > 0 && freeMoney > 0 ? Math.ceil(totalRemaining / freeMoney) : 0;
+    
+    document.getElementById('chartStats').innerHTML = `
+      <div>📊 ВСЕГО ДОЛГОВ: <span style="color:#ff6b6b;">${totalRemaining.toLocaleString()} ₽</span></div>
+      <div>✅ ПОГАШЕНО: <span style="color:${colors.text};">${totalPaid.toLocaleString()} ₽</span></div>
+      <div>💰 СВОБОДНО В МЕСЯЦ: <span style="color:#ffb347;">${freeMoney.toLocaleString()} ₽</span></div>
+      <div>📋 ОБЩИЙ МИНИМАЛЬНЫЙ ПЛАТЁЖ: <span style="color:#4ecdc4;">${totalMinPayments.toLocaleString()} ₽</span></div>
+      <div>⏱ МЕСЯЦЕВ ДО СВОБОДЫ: ${monthsEstimate > 0 ? `<span style="color:#4ecdc4;">${monthsEstimate}</span>` : '<span style="color:#33ff55;">0 - ВСЁ ЗАКРЫТО!</span>'}</div>
+    `;
+  }
+
+  function addToSmallestCredit(amount) {
+    const activeCredits = credits.filter(c => c.remaining > 0);
+    if (activeCredits.length === 0 || amount <= 0) return false;
+    
+    let smallest = activeCredits.reduce((a, b) => a.remaining < b.remaining ? a : b);
+    const payAmount = Math.min(amount, smallest.remaining);
+    smallest.remaining -= payAmount;
+    smallest.monthlyPaid += payAmount;
+    smallest.paidHistory.push({
+      amount: payAmount,
+      date: Date.now(),
+      remainingAfter: smallest.remaining,
+      note: "💪 ОТПРАВЛЕНО С ХОТЕЛОК"
+    });
+    return true;
+  }
+
+  function renderCredits() {
+    const container = document.getElementById('creditsContainer');
+    if (!container) return;
+    
+    const recommendations = calculateRecommendations();
+    const freeMoney = getMonthlyFreeMoney();
+    
+    let html = '';
+    for (let i = 0; i < credits.length; i++) {
+      const c = credits[i];
+      const paidPercent = c.initialAmount > 0 ? ((c.initialAmount - c.remaining) / c.initialAmount * 100).toFixed(1) : 100;
+      const recAmount = recommendations[c.id] || 0;
+      const remainingToMonthly = Math.max(0, recAmount - c.monthlyPaid);
+      const monthlyProgressPercent = recAmount > 0 ? (c.monthlyPaid / recAmount * 100) : 0;
+      
+      html += `
+        <div class="credit-block" data-id="${c.id}">
+          <div class="credit-header">
+            <span class="credit-title">💳 ${c.name}</span>
+            <div>
+              <button class="editCreditBtn" data-id="${c.id}" style="background:#ffb347; margin-right:5px;">✏️ РЕДАКТИРОВАТЬ</button>
+              <button class="removeCreditBtn" data-id="${c.id}" style="background:#6b2a2a;">❌ УДАЛИТЬ</button>
+            </div>
+          </div>
+          <div class="recommend-box">
+            💡 РЕКОМЕНДУЮ ЗАКИНУТЬ В ЭТОМ МЕСЯЦЕ: <span class="recommend-value">${recAmount.toLocaleString()} ₽</span>
+          </div>
+          <div class="progress-recommend">
+            <div style="display: flex; justify-content: space-between;">
+              <span>📊 ЗАКИНУТО В ЭТОМ МЕСЯЦЕ:</span>
+              <span><span style="color:#9bff9b;">${c.monthlyPaid.toLocaleString()} ₽</span> / ${recAmount.toLocaleString()} ₽</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${monthlyProgressPercent}%;"></div>
+            </div>
+            <div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${remainingToMonthly > 0 ? '#ff8888' : '#9bff9b'};">
+              ${remainingToMonthly > 0 ? `😤 ОСТАЛОСЬ: ${remainingToMonthly.toLocaleString()} ₽` : '✅ ВЫПОЛНЕНО!'}
+            </div>
+          </div>
+          <div class="credit-stats">
+            <div class="stat-item">
+              <div class="stat-label">БЫЛО</div>
+              <div class="stat-value">${c.initialAmount.toLocaleString()} ₽</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">ОСТАЛОСЬ</div>
+              <div class="stat-value">${c.remaining.toLocaleString()} ₽</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">ПОГАШЕНО</div>
+              <div class="stat-value positive">${(c.initialAmount - c.remaining).toLocaleString()} ₽ (${paidPercent}%)</div>
+            </div>
+          </div>
+          <div class="min-payment-edit">
+            <label>💳 МИН. ПЛАТЁЖ:</label>
+            <input type="number" class="minPaymentInput" data-id="${c.id}" value="${c.minPayment}" step="100">
+            <button class="saveMinPaymentBtn" data-id="${c.id}" style="background:#4ecdc4; padding:4px 12px;">💾</button>
+          </div>
+          <div class="payment-input">
+            <span>💰 ЗАКИНУЛ:</span>
+            <input type="number" id="payAmount_${c.id}" placeholder="Сумма" step="1000">
+            <button class="recordPaymentBtn" data-id="${c.id}" style="background:#4ecdc4;">➕ ЗАПИСАТЬ</button>
+            <button class="quickPayFullBtn" data-id="${c.id}" style="background:#ffb347;">⚡ ЗАКРЫТЬ</button>
+          </div>
+          ${c.paidHistory.length > 0 ? `<div style="font-size:0.7rem; color:#aaa;">📌 Последний: ${c.paidHistory[c.paidHistory.length-1].amount} ₽</div>` : ''}
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+    
+    document.querySelectorAll('.removeCreditBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        if (credits.length > 1) {
+          credits = credits.filter(c => c.id !== id);
+          renderCredits();
+          renderHistory();
+          updateChart();
+          saveToLocal();
+        } else {
+          alert('Нельзя удалить последний кредит!');
+        }
+      });
+    });
+    
+    document.querySelectorAll('.editCreditBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const credit = credits.find(c => c.id === id);
+        if (credit) {
+          currentEditId = id;
+          document.getElementById('editCreditName').value = credit.name;
+          document.getElementById('editCreditAmount').value = credit.initialAmount;
+          document.getElementById('editModal').style.display = 'block';
+        }
+      });
+    });
+    
+    document.querySelectorAll('.saveMinPaymentBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const input = document.querySelector(`.minPaymentInput[data-id="${id}"]`);
+        let newMinPayment = parseFloat(input.value);
+        if (isNaN(newMinPayment) || newMinPayment < 0) {
+          alert('Введи нормальную сумму!');
+          return;
+        }
+        const credit = credits.find(c => c.id === id);
+        if (credit) {
+          credit.minPayment = newMinPayment;
+          renderCredits();
+          updateChart();
+          saveToLocal();
+        }
+      });
+    });
+    
+    document.querySelectorAll('.recordPaymentBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const input = document.getElementById(`payAmount_${id}`);
+        let amount = parseFloat(input.value);
+        if (isNaN(amount) || amount <= 0) {
+          alert('Введи сумму!');
+          return;
+        }
+        const credit = credits.find(c => c.id === id);
+        if (credit && credit.remaining > 0) {
+          const payAmount = Math.min(amount, credit.remaining);
+          credit.remaining -= payAmount;
+          credit.monthlyPaid += payAmount;
+          credit.paidHistory.push({ amount: payAmount, date: Date.now(), remainingAfter: credit.remaining });
+          input.value = '';
+          renderCredits();
+          renderHistory();
+          updateChart();
+          saveToLocal();
+          checkAllPaid();
+        }
+      });
+    });
+    
+    document.querySelectorAll('.quickPayFullBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const credit = credits.find(c => c.id === id);
+        if (credit && credit.remaining > 0) {
+          const payAmount = credit.remaining;
+          credit.remaining = 0;
+          credit.monthlyPaid += payAmount;
+          credit.paidHistory.push({ amount: payAmount, date: Date.now(), remainingAfter: 0 });
+          renderCredits();
+          renderHistory();
+          updateChart();
+          saveToLocal();
+          checkAllPaid();
+        }
+      });
+    });
+  }
+  
+  function renderHistory() {
+    const container = document.getElementById('historyContainer');
+    if (!container) return;
+    
+    let allPayments = [];
+    for (let c of credits) {
+      for (let p of c.paidHistory) {
+        allPayments.push({
+          creditName: c.name,
+          amount: p.amount,
+          date: p.date,
+          remainingAfter: p.remainingAfter,
+          note: p.note || ''
+        });
+      }
+    }
+    allPayments.sort((a,b) => b.date - a.date);
+    
+    if (allPayments.length === 0) {
+      container.innerHTML = '<div style="padding:20px; text-align:center;">Пока ничего не закинул</div>';
+      return;
+    }
+    
+    let html = `<table><thead><tr><th>ДАТА</th><th>КРЕДИТ</th><th>СУММА</th><th>ОСТАЛОСЬ</th><th>ПРИМЕЧАНИЕ</th></tr></thead><tbody>`;
+    for (let p of allPayments) {
+      html += `<tr><td>${new Date(p.date).toLocaleString()}</td><td>${p.creditName}</td><td class="positive">${p.amount.toLocaleString()} ₽</td><td>${p.remainingAfter.toLocaleString()} ₽</td><td style="color:#ffb347;">${p.note || '-'}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+  
+  function checkAllPaid() {
+    const allPaid = credits.every(c => c.remaining <= 0);
+    if (allPaid && credits.length > 0) {
+      document.getElementById('footerMsg').innerHTML = '🎉 ПОЗДРАВЛЯЮ, ТЫ ЗАКРЫЛ ВСЕ КРЕДИТЫ! 🎉';
+      document.getElementById('footerMsg').style.background = '#2a4a2a';
+    }
+  }
+  
+  function resetAllPayments() {
+    if (confirm('Сбросить все закидоны?')) {
+      for (let c of credits) {
+        c.remaining = c.initialAmount;
+        c.monthlyPaid = 0;
+        c.paidHistory = [];
+      }
+      renderCredits();
+      renderHistory();
+      updateChart();
+      saveToLocal();
+    }
+  }
+  
+  function resetMonthlyProgress() {
+    if (confirm('Сбросить месячный прогресс?')) {
+      for (let c of credits) {
+        c.monthlyPaid = 0;
+      }
+      renderCredits();
+      saveToLocal();
+    }
+  }
+  
+  function resetShameCounter() {
+    if (confirm('Сбросить счётчик стыда?')) {
+      totalWastedMoney = 0;
+      saveWastedToLocal();
+      updateShameCounter();
+      saveToLocal();
+    }
+  }
+  
+  loadFromLocal();
+  loadWastedFromLocal();
+  renderCredits();
+  renderHistory();
+  updateChart();
+  updateShameCounter();
+  
+  setTimeout(() => { slapUserInFace(); }, 500);
+  
+  document.getElementById('closeSlapBtn').addEventListener('click', closeSlap);
+  document.getElementById('salary').addEventListener('input', () => { renderCredits(); updateChart(); });
+  document.getElementById('rent').addEventListener('input', () => { renderCredits(); updateChart(); });
+  document.getElementById('living').addEventListener('input', () => { renderCredits(); updateChart(); });
+  
+  function handleWasteClick(type, amount) {
+    if (isNaN(amount) || amount <= 0) {
+      alert('Введи сумму, ебанат!');
+      return false;
+    }
+    const totalDebt = credits.reduce((sum, c) => sum + c.remaining, 0);
+    if (totalDebt === 0) {
+      alert('У тебя уже нет кредитов, можешь тратить на хуйню!');
+      return false;
+    }
+    showConfirmModal(type, amount, () => {
+      applyWaste(type, amount);
+      const input = document.getElementById(type === 'unexpected' ? 'unexpected' : 'wants');
+      input.value = '0';
+    });
+    return true;
+  }
+  
+  document.getElementById('applyUnexpectedBtn').addEventListener('click', () => {
+    initAudio();
+    const amount = parseFloat(document.getElementById('unexpected').value);
+    handleWasteClick('unexpected', amount);
+  });
+  
+  document.getElementById('applyWantsBtn').addEventListener('click', () => {
+    initAudio();
+    const amount = parseFloat(document.getElementById('wants').value);
+    handleWasteClick('wants', amount);
+  });
+  
+  document.getElementById('suggestToCreditUnexpected').addEventListener('click', () => {
+    const input = document.getElementById('unexpected');
+    let amount = parseFloat(input.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Введи сумму, ебанат!');
+      return;
+    }
+    if (addToSmallestCredit(amount)) {
+      const msg = document.createElement('div');
+      msg.textContent = `💪 ПРАВИЛЬНО! ${amount.toLocaleString()} ₽ УШЛИ НА КРЕДИТ!`;
+      msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#4ecdc4; color:#000; padding:10px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000;';
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+      input.value = '0';
+      renderCredits();
+      renderHistory();
+      updateChart();
+      saveToLocal();
+    } else {
+      alert('Нет активных кредитов!');
+    }
+  });
+  
+  document.getElementById('suggestToCreditWants').addEventListener('click', () => {
+    const input = document.getElementById('wants');
+    let amount = parseFloat(input.value);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Введи сумму, ебанат!');
+      return;
+    }
+    if (addToSmallestCredit(amount)) {
+      const msg = document.createElement('div');
+      msg.textContent = `💪 МОЛОДЕЦ! ${amount.toLocaleString()} ₽ УШЛИ НА КРЕДИТ!`;
+      msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#4ecdc4; color:#000; padding:10px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000;';
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+      input.value = '0';
+      renderCredits();
+      renderHistory();
+      updateChart();
+      saveToLocal();
+    } else {
+      alert('Нет активных кредитов!');
+    }
+  });
+  
+  document.getElementById('confirmYes').addEventListener('click', () => {
+    if (pendingWaste.callback) pendingWaste.callback();
+    else applyWaste(pendingWaste.type, pendingWaste.amount);
+    closeConfirmModal();
+  });
+  
+  document.getElementById('confirmNo').addEventListener('click', () => {
+    const msg = document.createElement('div');
+    msg.textContent = `😇 МУДРОЕ РЕШЕНИЕ! СОХРАНИЛ ${pendingWaste.amount.toLocaleString()} ₽! ЛУЧШЕ ЗАКИНЬ ИХ НА КРЕДИТ!`;
+    msg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#9bff9b; color:#000; padding:10px; border-radius:10px; animation:fadeIn 0.3s; z-index:1000;';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+    closeConfirmModal();
+  });
+  
+  window.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('confirmModal')) closeConfirmModal();
+    if (e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
+    if (e.target === document.getElementById('addModal')) document.getElementById('addModal').style.display = 'none';
+  });
+  
+  document.getElementById('addCreditBtn').addEventListener('click', () => {
+    document.getElementById('addCreditName').value = '';
+    document.getElementById('addCreditAmount').value = '';
+    document.getElementById('addMinPayment').value = '500';
+    document.getElementById('addModal').style.display = 'block';
+  });
+  
+  document.getElementById('saveAddBtn').addEventListener('click', () => {
+    let newName = document.getElementById('addCreditName').value;
+    let newAmount = parseFloat(document.getElementById('addCreditAmount').value);
+    let newMinPayment = parseFloat(document.getElementById('addMinPayment').value);
+    if (!newName.trim()) newName = `Кредит ${credits.length + 1}`;
+    if (isNaN(newAmount) || newAmount <= 0) { alert('Введи сумму!'); return; }
+    if (isNaN(newMinPayment) || newMinPayment < 0) newMinPayment = 500;
+    credits.push({ id: nextId++, name: newName, initialAmount: newAmount, remaining: newAmount, minPayment: newMinPayment, paidHistory: [], monthlyPaid: 0 });
+    renderCredits(); renderHistory(); updateChart(); saveToLocal();
+    document.getElementById('addModal').style.display = 'none';
+  });
+  
+  document.getElementById('cancelAddBtn').addEventListener('click', () => {
+    document.getElementById('addModal').style.display = 'none';
+  });
+  
+  document.getElementById('resetPaymentsBtn').addEventListener('click', resetAllPayments);
+  document.getElementById('resetMonthlyBtn').addEventListener('click', resetMonthlyProgress);
+  document.getElementById('resetShameBtn').addEventListener('click', resetShameCounter);
+  document.getElementById('redeemShameBtn').addEventListener('click', redeemWastedMoney);
+  
+  document.getElementById('saveEditBtn').addEventListener('click', () => {
+    if (currentEditId !== null) {
+      const credit = credits.find(c => c.id === currentEditId);
+      if (credit) {
+        const newName = document.getElementById('editCreditName').value;
+        const newAmount = parseFloat(document.getElementById('editCreditAmount').value);
+        if (newName.trim()) credit.name = newName.trim();
+        if (!isNaN(newAmount) && newAmount > 0) {
+          const diff = newAmount - credit.initialAmount;
+          credit.initialAmount = newAmount;
+          credit.remaining = Math.max(0, credit.remaining + diff);
+        }
+        renderCredits(); renderHistory(); updateChart(); saveToLocal();
+      }
+    }
+    document.getElementById('editModal').style.display = 'none';
+    currentEditId = null;
+  });
+  
+  document.getElementById('cancelEditBtn').addEventListener('click', () => {
+    document.getElementById('editModal').style.display = 'none';
+    currentEditId = null;
+  });
+</script>
+</body>
+</html>
