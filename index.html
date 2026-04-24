@@ -653,7 +653,7 @@
     </div>
     <button class="close-slap" id="closeSlapBtn" style="display: none;">😤 Я ПОНЯЛ ЧТО Я ХУЕСОС КОТОРЫЙ ТРАТИТ ПРОСТО ТАК ДЕНЬГИ 😤</button>
     <div style="display: flex; gap: 0.5rem; margin-top: 10px; align-items: center; flex-wrap: wrap;">
-      <input type="number" id="redeemAmount" placeholder="Сколько отбить?" value="0" step="1000" style="background: #2a2a30; border: 1px solid #4a4a55; color: #9bff9b; padding: 8px 12px; border-radius: 8px; font-family: monospace; width: 180px;">
+      <input type="number" id="redeemAmount" placeholder="Сколько отбить?" value="" step="1000" style="background: #2a2a30; border: 1px solid #4a4a55; color: #9bff9b; padding: 8px 12px; border-radius: 8px; font-family: monospace; width: 180px;">
       <button id="redeemShameBtn" style="display: none; background: #4ecdc4;">💪 ОТБИТЬ (ЗАКИНУТЬ НА КРЕДИТ) 💪</button>
     </div>
   </div>
@@ -676,7 +676,7 @@
   <div class="waste-panel">
     <div class="waste-group">
       <h3>⚠️ НЕПРЕДВИДЕННЫЕ РАСХОДЫ</h3>
-      <input type="number" id="unexpected" placeholder="Сумма" value="0" step="500">
+      <input type="number" id="unexpected" placeholder="Сумма" value="" step="500">
       <div class="waste-buttons">
         <button id="applyUnexpectedBtn" style="background:#ff6b6b;">💸 ПОТРАТИТЬ</button>
         <button id="suggestToCreditUnexpected" style="background:#4ecdc4;">💡 ОТПРАВИТЬ НА КРЕДИТ</button>
@@ -685,7 +685,7 @@
     </div>
     <div class="waste-group">
       <h3>😈 МОИ "ХОЧУ"</h3>
-      <input type="number" id="wants" placeholder="Сумма" value="0" step="500">
+      <input type="number" id="wants" placeholder="Сумма" value="" step="500">
       <div class="waste-buttons">
         <button id="applyWantsBtn" style="background:#ff6b6b;">💸 ПОТРАТИТЬ</button>
         <button id="suggestToCreditWants" style="background:#4ecdc4;">💡 ОТПРАВИТЬ НА КРЕДИТ</button>
@@ -764,9 +764,9 @@
     <label>НАЗВАНИЕ:</label>
     <input type="text" id="addCreditName" placeholder="Например: Кредит в Тинькофф">
     <label>СУММА ДОЛГА (₽):</label>
-    <input type="number" id="addCreditAmount" placeholder="10000">
+    <input type="number" id="addCreditAmount" placeholder="10000" value="">
     <label>МИНИМАЛЬНЫЙ ПЛАТЁЖ (₽):</label>
-    <input type="number" id="addMinPayment" placeholder="500">
+    <input type="number" id="addMinPayment" placeholder="500" value="">
     <div class="modal-buttons">
       <button id="saveAddBtn" style="background:#4ecdc4;">➕ ДОБАВИТЬ</button>
       <button id="cancelAddBtn" style="background:#6b2a2a;">❌ ОТМЕНА</button>
